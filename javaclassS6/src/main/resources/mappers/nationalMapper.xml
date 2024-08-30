@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spring.javaclassS6.dao.NationalDAO">
+	
+	<select id="getParkList" resultType="com.spring.javaclassS6.vo.NationalVO">
+		select * from national <if test="part != '전체보기'"> where part = #{part} </if> order by idx desc;
+	</select>
+	
+	<select id="getAllVisit" resultType="com.spring.javaclassS6.vo.ScheduleVO">
+		select course,sum(visitCnt) as allVisitCnt from schedule where visitDate = #{ymd} group by course;
+	</select>
+	
+	<select id="getNationalVisit" resultType="com.spring.javaclassS6.vo.NationalVO">
+		select * from national where idx = #{idx};
+	</select>
+	
+	<select id="getNationalVisitCnt" resultType="com.spring.javaclassS6.vo.ScheduleVO">
+	  select * from schedule where nationalIdx = #{idx} and visitDate = #{ymd};
+	</select>
+	
+	<insert id="setParkInput">
+	  insert into national values (default,#{vo.title},#{vo.nPeople},#{vo.content},#{vo.photo},#{vo.course},#{vo.part},#{vo.noneDate});
+	</insert>
+	
+	<insert id="scheduleInput">
+		insert into schedule values (default,#{vo.nationalIdx},#{vo.course},#{vo.mid},#{vo.visitDate},#{vo.visitCnt},#{vo.content},default);
+	</insert>
+	
+</mapper>

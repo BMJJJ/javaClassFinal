@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spring.javaclassS6.dao.MapandWeatherDAO">
+	
+	<select id="getKakaoAddressSearch" resultType="com.spring.javaclassS6.vo.KakaoAddressVO">
+		select * from kakaoAddress where address = #{address};
+	</select>
+	
+	<select id="getKakaoAddressList"  resultType="com.spring.javaclassS6.vo.KakaoAddressVO">
+	  select * from kakaoAddress order by address;
+	</select>
+	
+	<select id="getAddressSearch" resultType="com.spring.javaclassS6.vo.KakaoAddressVO">
+	  	select kk.*,(select count(*) from photoReply where photoIdx = #{idx}) as replyCnt from photoGallery pg where idx = #{idx};
+		</select>
+	
+	<insert id="setKakaoAddressInput">
+	  insert into kakaoAddress values (#{vo.address}, #{vo.latitude}, #{vo.longitude},#{vo.content});
+	</insert>
+	
+	<update id="setKakaoAddressUpdate">
+    UPDATE kakaoAddress 
+    SET latitude = #{vo.latitude}, 
+        content = #{vo.content}
+    WHERE address = #{vo.address} AND longitude = #{vo.longitude};
+	</update>
+	
+	
+	<delete id="setaddressDelete">
+		delete from kakaoAddress where address = #{address};
+	</delete>
+	
+	
+</mapper>

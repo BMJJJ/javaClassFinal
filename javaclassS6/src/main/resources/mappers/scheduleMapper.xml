@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spring.javaclassS6.dao.ScheduleDAO">
+ <!--  <select id="getScheduleList" resultType="com.spring.javaclassS6.vo.ScheduleVO">
+  	select sDate,part from schedule2 where mid=#{mid} and date_format(sDate, '%Y-%m')=#{ym} order by sDate, part;
+  	select *, count(part) as partCnt from schedule where <if test="level != 0">mid = #{mid} and</if> date_format(sDate, '%Y-%m') = #{ym} group by sDate,part order by sDate, part; 
+  	select * from schedule where <if test="level != 0">mid = #{mid} and</if> date_format(sDate, '%Y-%m') = #{ym} group by sDate order by sDate;
+  	select part,count(part) as partCnt from national where noneDate not like concat('%',date_format(now(), '%Y-%m-%d'),'%') group by part order by part;
+  	select part,count(part) as partCnt from national where noneDate not like concat('%',date_format(now(), '%Y-%m-%d'),'%') group by part order by part;
+  </select> -->
+  
+  <select id="getScheduleList" resultType="com.spring.javaclassS6.vo.NationalVO">
+    <!-- 
+	  SELECT s.*, n.part, 
+	         (SELECT COUNT(*) 
+	          FROM national 
+	          WHERE part = n.part 
+	            AND noneDate NOT LIKE CONCAT('%', DATE_FORMAT(NOW(), '%Y-%m-%d'), '%')
+	         ) as partCnt
+	  FROM schedule s
+	  JOIN national n ON s.parkIdx = n.idx
+	  WHERE <if test="level != 0">s.mid = #{mid} AND</if> 
+	        DATE_FORMAT(s.visitDate, '%Y-%m') = #{ym}
+	  ORDER BY s.visitDate, n.part;
+	   -->
+	  select part,count(part) as partCnt from national where noneDate not like concat('%',date_format(now(), '%Y-%m-%d'),'%') group by part order by part;
+	</select>
+  
+  <select id="getScheduleMenu" resultType="com.spring.javaclassS6.vo.NationalVO">
+  	select * from schedule where mid=#{mid} and date_format(sDate, '%Y-%m-%d')=#{ymd};
+  </select>
+  
+  <select id="getNationTotalList" resultType="com.spring.javaclassS6.vo.NationalVO">
+  	select *,count(*) as partCnt from national group by part order by part;
+  </select>
+  
+  <select id="getNationNoneList" resultType="com.spring.javaclassS6.vo.NationalVO">
+  	select *,(select part from national where idx = v.nationalIdx) as part,count(*) as partCnt from noneVisit v where date_format(noneDate,"%Y-%m") = #{ym} group by noneDate,part  order by noneDate,part;
+  </select>
+  
+  <update id="setScheduleUpdateOk">
+  	update schedule set content = #{vo.content} where idx = #{vo.idx};
+  </update>
+  
+  
+  <!-- <insert id="setScheduleInputOk">
+    insert into schedule values (default, #{vo.mid},#{vo.parkIdx}, #{vo.ymd}, #{vo.part}, #{vo.content});
+  </insert> -->
+  
+  
+  <delete id="setScheduleDeleteOk">
+    delete from schedule where idx = #{idx};
+  </delete>
+
+</mapper>

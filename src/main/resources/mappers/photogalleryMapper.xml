@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spring.javaclassS6.dao.PhotoGalleryDAO">
+	
+		<select id="getPhotoGalleryList" resultType="com.spring.javaclassS6.vo.PhotoGalleryVO">
+	    <choose>
+	        <when test="part == '전체'">
+	            <choose>
+	                <when test="choice == '최신순'">
+	                    SELECT pg.*,
+	                           (SELECT COUNT(*) FROM photoReply WHERE photoIdx = pg.idx) AS replyCnt
+	                    FROM photoGallery pg
+	                    ORDER BY pg.idx DESC
+	                    LIMIT #{startIndexNo}, #{pageSize}
+	                </when>
+	                <otherwise>
+	                    SELECT pg.*,
+	                           (SELECT COUNT(*) FROM photoReply WHERE photoIdx = pg.idx) AS replyCnt
+	                    FROM photoGallery pg
+	                    ORDER BY ${choice} DESC, pg.idx DESC
+	                    LIMIT #{startIndexNo}, #{pageSize}
+	                </otherwise>
+	            </choose>
+	        </when>
+	        <otherwise>
+	            <choose>
+	                <when test="choice == '최신순'">
+	                    SELECT pg.*,
+	                           (SELECT COUNT(*) FROM photoReply WHERE photoIdx = pg.idx) AS replyCnt
+	                    FROM photoGallery pg
+	                    WHERE pg.part = #{part}
+	                    ORDER BY pg.idx DESC
+	                    LIMIT #{startIndexNo}, #{pageSize}
+	                </when>
+	                <otherwise>
+	                    SELECT pg.*,
+	                           (SELECT COUNT(*) FROM photoReply WHERE photoIdx = pg.idx) AS replyCnt
+	                    FROM photoGallery pg
+	                    WHERE pg.part = #{part}
+	                    ORDER BY ${choice} DESC, pg.idx DESC
+	                    LIMIT #{startIndexNo}, #{pageSize}
+	                </otherwise>
+	            </choose>
+	        </otherwise>
+	    </choose>
+		</select>
+
+
+		<select id="getLastInsertedPhotoGalleryIdx" resultType="int">
+		    SELECT LAST_INSERT_ID()
+		</select>
+
+		<!-- getPhotoGalleryById 메서드를 위한 select 문 -->
+    <select id="getPhotoGalleryById" resultType="com.spring.javaclassS6.vo.PhotoGalleryVO">
+        SELECT *
+        FROM photoGallery
+        WHERE idx = #{photoIdx}
+    </select>
+
+    <!-- getPhotoGalleryReplies 메서드를 위한 select 문 -->
+    <select id="getPhotoGalleryReplies" resultType="com.spring.javaclassS6.vo.PhotoGalleryVO">
+        SELECT *
+        FROM photoReply
+        WHERE photoIdx = #{photoIdx}
+        ORDER BY idx DESC
+    </select>
+
+	<!-- 이미 좋아요를 눌렀는지 확인 -->
+    <select id="checkIfAlreadyLiked" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM photoGallery
+        WHERE idx = #{idx} AND sMid = #{sMid}
+    </select>
+
+		
+		<select id="findPhotoGood" resultType="com.spring.javaclassS6.vo.PhotoGoodVO">
+        SELECT * FROM photoGood WHERE photoIdx = #{photoIdx} AND midIdx = #{mid}
+    </select>
+	
+		<select id="isLikedMid" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM photoGood
+        WHERE photoIdx = #{photoIdx} AND midIdx = #{mid}
+    </select>
+	
+		<select id="getPhotoParentReplyCheck" resultType="com.spring.javaclassS6.vo.PhotoReplyVO">
+			select * from photoReply where photoIdx = #{photoIdx} order by idx desc limit 1;
+		</select>
+			
+		<select id="getPhotoGalleryReplyCount" parameterType="int" resultType="int">
+        SELECT COUNT(*) FROM photoReply WHERE photoIdx = #{photoIdx}
+    </select>	
+		
+		<select id="getPhotoContent" resultType="com.spring.javaclassS6.vo.PhotoGalleryVO">
+			select * from photoGallery where idx = #{idx};
+		</select>
+	
+		<select id="getPhotoIdxSearch" resultType="com.spring.javaclassS6.vo.PhotoGalleryVO">
+	  	select pg.*,(select count(*) from photoReply where photoIdx = #{idx}) as replyCnt from photoGallery pg where idx = #{idx};
+		</select>
+
+		
+		<select id="setPhotoGallerySingle" resultType="com.spring.javaclassS6.vo.PhotoGalleryVO">
+	  	select *,(select count(*) from photoReply where photoIdx = p.idx) as replyCnt from photoGallery p where idx = #{idx} order by idx desc;
+		</select>
+	
+			
+		<select id="getPhotoGalleryIdxList" resultType="int">
+	  	select idx from photoGallery order by idx desc;
+		</select>
+	
+
+		<insert id="setPhotoGalleryInput">
+		  insert into photoGallery values (default,#{vo.mid},#{vo.nickName},#{vo.title},#{vo.content},#{vo.expl},default,default,#{vo.thumbnail},default,#{vo.part},#{vo.photoCount});
+		</insert>
+	
+		<insert id="insertPhotoGood" parameterType="com.spring.javaclassS6.vo.PhotoGoodVO">
+	        INSERT INTO photoGood VALUES (default,#{vo.midIdx}, #{vo.photoIdx});
+	  </insert>
+	
+		<insert id="setPhotoReplyInput">
+	  	insert into photoReply values (default,#{replyVO.photoIdx},#{replyVO.re_step},#{replyVO.re_order},#{replyVO.mid},default,#{replyVO.content},#{replyVO.openSw});
+		</insert>
+		
+	
+	 <!-- incrementReadCount 메서드를 위한 update 문 -->
+    <update id="incrementReadCount">
+        UPDATE photoGallery
+        SET readNum = readNum + 1
+        WHERE idx = #{photoIdx};
+    </update>
+		
+    <update id="incrementGoodCount">
+        UPDATE photoGallery SET good = good + 1 WHERE idx = #{photoIdx};
+    </update>
+
+    <update id="decrementGoodCount">
+        UPDATE photoGallery SET good = good - 1 WHERE idx = #{photoIdx};
+    </update>
+		
+		<update id="setReplyOrderUpdate">
+	  	update photoReply set re_order = re_order + 1 where photoIdx = #{photoIdx} and re_order > #{re_order};
+		</update>
+		
+    <delete id="deletePhotoGood">
+    	DELETE FROM photoGood WHERE idx = #{idx};
+    </delete>
+    
+    <!-- <delete id="setPhotoDelete">
+    
+			delete from photoGallery where idx = #{idx};
+		 </delete>-->
+		
+		<delete id="setPhotoGalleryDelete">
+			delete from photogood where photoIdx = #{idx};
+			delete from photoReply where photoIdx = #{idx};
+	  	delete from photoGallery where idx = #{idx};
+		</delete>
+	
+		<delete id="deletePhotoReply">
+			delete from photoReply where idx = #{idx};
+		</delete>
+		
+	
+</mapper>
